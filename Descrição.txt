@@ -1,0 +1,7 @@
+Gestão da DSD do GDME - Uni-CV
+
+* Existe um conjunto de disciplinas das áreas de Matemática e Estatística a serem associadas aos professores do GDME.
+* Cada disciplina tem uma carga horária (p.e., 5 horas) que pode ser dividida em teórica (p.e. 3 horas) e prática (p.e. 2 horas)
+* Uma disciplina pode ser lecionada por 2 professores, sendo um responsável pela parte teórica e o outro pela parte prática. No entanto, um único professor pode ficar responsável pelas duas partes.
+* Uma disciplina pode ser oferecida a vários cursos, sendo que há possibilidade de uma aula teórica pode ser oferecida, em simultâneo, para cursos diferentes, assim como uma aula prática.
+* Cada professor tem uma carga horária semanal máxima, sendo 28 horas para um licenciado ou mestre e 24 horas para um doutor.
