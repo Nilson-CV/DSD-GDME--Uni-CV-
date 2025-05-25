@@ -44,6 +44,16 @@ def criar_tabelas():
         FOREIGN KEY (disciplina_id) REFERENCES disciplinas(codigo),
         FOREIGN KEY (professor_id) REFERENCES professores(codigo)
     );
+    CREATE TABLE IF NOT EXISTS aulas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        disciplina_id INTEGER NOT NULL,
+        curso_id INTEGER NOT NULL,
+        professor_id INTEGER NOT NULL,
+        tipo TEXT CHECK (tipo IN ('Teorica', 'Pratica')) NOT NULL,
+        FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+        FOREIGN KEY (curso_id) REFERENCES cursos(id),
+        FOREIGN KEY (professor_id) REFERENCES professores(id)
+    );
     """)
     conn.commit()
 
@@ -51,7 +61,7 @@ criar_tabelas()
 
 st.title("📚 Gestão de Disciplinas - GDME Uni-CV")
 
-menu = st.sidebar.selectbox("Menu", ["Cadastrar Professor", "Cadastrar Disciplina", "Cadastrar Curso", "Atribuir Professores", "Relatório de Carga Horária"])
+menu = st.sidebar.selectbox("Menu", ["Cadastrar Professor", "Cadastrar Disciplina", "Cadastrar Curso", "Atribuir Professores", "Relatório de Carga Horária", "Cadastrar Aula em Curso"])
 
 # CADASTRO DE PROFESSOR
 if menu == "Cadastrar Professor":
@@ -102,7 +112,7 @@ elif menu == "Atribuir Professores":
     if st.button("Atribuir"):
         cursor.execute("INSERT INTO aula_responsavel (disciplina_id, professor_id, tipo) VALUES (?, ?, ?)", (disc_id[0], prof_id[0], tipo))
         conn.commit()
-        st.success(f"Professor(a) {professores[0]}} associado(a) à parte {tipo.lower()} da disciplina.")
+        st.success(f"Professor(a) **{prof_id[1]}** associado(a) à parte **{tipo}** da disciplina **{disc_id[1]}**.")
 
 # RELATÓRIO
 elif menu == "Relatório de Carga Horária":
@@ -127,4 +137,24 @@ elif menu == "Relatório de Carga Horária":
 
     for nome, grau, maximo, atual in dados:
         st.write(f"**{nome}** ({grau}): {atual}h / {maximo}h")
+# Cadastrar Aula em Curso
+elif menu == "Cadastrar Aula em Curso":
+    st.subheader("📚 Cadastro de Aula por Curso")
+
+    disciplinas = cursor.execute("SELECT id, nome FROM disciplinas").fetchall()
+    cursos = cursor.execute("SELECT id, nome FROM cursos").fetchall()
+    professores = cursor.execute("SELECT id, nome FROM professores").fetchall()
+
+    disc_id = st.selectbox("Disciplina", disciplinas, format_func=lambda x: x[1])
+    curso_id = st.selectbox("Curso", cursos, format_func=lambda x: x[1])
+    tipo = st.radio("Tipo de aula", ["Teorica", "Pratica"])
+    prof_id = st.selectbox("Professor", professores, format_func=lambda x: x[1])
+
+    if st.button("Cadastrar Aula"):
+        cursor.execute("""
+            INSERT INTO aulas (disciplina_id, curso_id, professor_id, tipo)
+            VALUES (?, ?, ?, ?)
+        """, (disc_id[0], curso_id[0], prof_id[0], tipo))
+        conn.commit()
+        st.success("Aula cadastrada com sucesso!")
 
