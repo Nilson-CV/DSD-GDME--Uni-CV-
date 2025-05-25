@@ -26,9 +26,9 @@ if menu == "Cadastrar Professor":
     grau = st.selectbox("Grau Acadêmico", ["Licenciado", "Mestre", "Doutor"])
     if st.button("Salvar"):
         carga_horaria_max = 28 if grau in ['Licenciado', 'Mestre'] else 24
-        cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria, carga_horaria_max) VALUES (?, ?, ?, ?, ?)", (codigo, nome, grau, carga_horaria, carga_horaria_max))
+        cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria_max) VALUES (?, ?, ?, ?)", (codigo, nome, grau, carga_horaria_max))
         conn.commit()
-        st.success("Professor **{nome.upper()}** cadastrado com sucesso!")
+        st.success(f"Professor **{nome.upper()}** cadastrado com sucesso!")
 
 # CADASTRO DE DISCIPLINA
 elif menu == "Cadastrar Disciplina":
@@ -69,31 +69,6 @@ elif menu == "Atribuir Professores":
         conn.commit()
         st.success(f"Professor(a) **{prof_id[1]}** associado(a) à parte **{tipo}** da disciplina **{disc_id[1]}**.")
 
-# RELATÓRIO
-elif menu == "Relatório de Carga Horária":
-    st.subheader("📊 Relatório de Carga Horária por Professor")
-
-    dados = cursor.execute("""
-    SELECT 
-        p.nome,
-        p.grau,
-        p.carga_horaria,
-        p.carga_horaria_max,
-        COALESCE(SUM(
-            CASE a.tipo
-                WHEN 'Teorica' THEN d.carga_teorica
-                WHEN 'Pratica' THEN d.carga_pratica
-            END
-        ), 0) AS carga_atual
-    FROM professores p
-    LEFT JOIN aula_responsavel a ON p.codigo = a.professor_id
-    LEFT JOIN disciplinas d ON a.disciplina_id = d.codigo
-    GROUP BY p.codigo;
-    """).fetchall()
-
-    for nome, grau, maximo, atual in dados:
-        st.write(f"**{nome}** ({grau}): {atual}h / {maximo}h")
-
 # Cadastrar Aula (Professor e Disciplina) em Curso
 elif menu == "Cadastrar Aula em Curso":
     st.subheader("📚 Cadastro de Aula por Curso")
@@ -131,3 +106,20 @@ elif menu == "Cadastrar Aula em Curso":
         conn.commit()
         st.success("Aula cadastrada com sucesso!")
 
+# RELATÓRIO DA CARGA HORÁRIA        
+elif menu == "Relatório de Carga Horária":
+    st.subheader("📊 Relatório de Carga Horária por Professor")
+
+    dados = cursor.execute("""
+        SELECT nome, grau, carga_horaria_max, carga_horaria
+        FROM professores
+        ORDER BY nome;
+    """).fetchall()
+
+    for nome, grau, maximo, atual in dados:
+        cor = "🟢"
+        if atual > maximo:
+            cor = "🔴"
+        elif atual > 0.9 * maximo:
+            cor = "🟡"
+        st.markdown(f"{cor} **{nome}** ({grau}): {atual}h / {maximo}h")

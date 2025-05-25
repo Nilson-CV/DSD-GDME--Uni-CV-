@@ -37,14 +37,14 @@ CREATE TABLE IF NOT EXISTS aula_responsavel (
     FOREIGN KEY (professor_id) REFERENCES professores(codigo)
 );
 CREATE TABLE IF NOT EXISTS aulas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo INTEGER PRIMARY KEY AUTOINCREMENT,
     disciplina_id INTEGER NOT NULL,
     curso_id INTEGER NOT NULL,
     professor_id INTEGER NOT NULL,
     tipo TEXT CHECK (tipo IN ('Teorica', 'Pratica')) NOT NULL,
-    FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
-    FOREIGN KEY (curso_id) REFERENCES cursos(id),
-    FOREIGN KEY (professor_id) REFERENCES professores(id)
+    FOREIGN KEY (disciplina_id) REFERENCES disciplinas(codigo),
+    FOREIGN KEY (curso_id) REFERENCES cursos(codigo),
+    FOREIGN KEY (professor_id) REFERENCES professores(codigo)
 );
 
 -- Trigger: atualiza carga horária ao inserir nova aula
@@ -59,8 +59,8 @@ BEGIN
                 WHEN 'Pratica' THEN d.carga_pratica
          END
          FROM disciplinas d
-         WHERE d.id = NEW.disciplina_id)
-    WHERE id = NEW.professor_id;
+         WHERE d.codigo = NEW.disciplina_id)
+    WHERE codigo = NEW.professor_id;
 END;
 
 -- Trigger: remove carga horária ao excluir aula
@@ -75,6 +75,6 @@ BEGIN
                 WHEN 'Pratica' THEN d.carga_pratica
          END
          FROM disciplinas d
-         WHERE d.id = OLD.disciplina_id)
-    WHERE id = OLD.professor_id;
+         WHERE d.codigo = OLD.disciplina_id)
+    WHERE codigo = OLD.professor_id;
 END;
