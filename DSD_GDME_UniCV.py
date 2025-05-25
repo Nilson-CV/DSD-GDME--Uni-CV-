@@ -7,54 +7,7 @@ cursor = conn.cursor()
 
 # Função para criar as tabelas (executar uma vez)
 def criar_tabelas():
-    cursor.executescript("""
-    CREATE TABLE IF NOT EXISTS professores (
-        codigo TEXT PRIMARY KEY,
-        nome TEXT NOT NULL,
-        grau TEXT CHECK (grau IN ('Licenciado', 'Mestre', 'Doutor')) NOT NULL,
-        carga_horaria_max INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS disciplinas (
-        codigo TEXT PRIMARY KEY,
-        nome TEXT NOT NULL,
-        carga_total INTEGER NOT NULL,
-        carga_teorica INTEGER NOT NULL,
-        carga_pratica INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS cursos (
-        codigo TEXT PRIMARY KEY,
-        nome TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS disciplina_curso (
-        codigo INTEGER PRIMARY KEY AUTOINCREMENT,
-        disciplina_id INTEGER,
-        curso_id INTEGER,
-        FOREIGN KEY (disciplina_id) REFERENCES disciplinas(codigo),
-        FOREIGN KEY (curso_id) REFERENCES cursos(codigo)
-    );
-
-    CREATE TABLE IF NOT EXISTS aula_responsavel (
-        codigo INTEGER PRIMARY KEY AUTOINCREMENT,
-        disciplina_id INTEGER,
-        professor_id INTEGER,
-        tipo TEXT CHECK (tipo IN ('Teorica', 'Pratica')),
-        FOREIGN KEY (disciplina_id) REFERENCES disciplinas(codigo),
-        FOREIGN KEY (professor_id) REFERENCES professores(codigo)
-    );
-    CREATE TABLE IF NOT EXISTS aulas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        disciplina_id INTEGER NOT NULL,
-        curso_id INTEGER NOT NULL,
-        professor_id INTEGER NOT NULL,
-        tipo TEXT CHECK (tipo IN ('Teorica', 'Pratica')) NOT NULL,
-        FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
-        FOREIGN KEY (curso_id) REFERENCES cursos(id),
-        FOREIGN KEY (professor_id) REFERENCES professores(id)
-    );
-    """)
+    cursor.executescript(gdme_unicv.sql)
     conn.commit()
 
 criar_tabelas()
@@ -71,9 +24,9 @@ if menu == "Cadastrar Professor":
     grau = st.selectbox("Grau Acadêmico", ["Licenciado", "Mestre", "Doutor"])
     if st.button("Salvar"):
         carga_horaria_max = 28 if grau in ['Licenciado', 'Mestre'] else 24
-        cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria_max) VALUES (?, ?, ?, ?)", (codigo, nome, grau, carga_horaria_max))
+        cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria, carga_horaria_max) VALUES (?, ?, ?, ?, ?)", (codigo, nome, grau, carga_horaria, carga_horaria_max))
         conn.commit()
-        st.success("Professor cadastrado com sucesso!")
+        st.success("Professor **{nome.upper()}** cadastrado com sucesso!")
 
 # CADASTRO DE DISCIPLINA
 elif menu == "Cadastrar Disciplina":
@@ -94,7 +47,7 @@ elif menu == "Cadastrar Curso":
     codigo = st.text_input("Código do curso")
     nome = st.text_input("Nome do curso")
     if st.button("Cadastrar Curso"):
-        cursor.execute("INSERT INTO cursos (codigo, nome) VALUES (?, ?)", (codigo,nome))
+        cursor.execute("INSERT INTO cursos (codigo, nome) VALUES (?, ?)", (codigo, nome))
         conn.commit()
         st.success("Curso cadastrado com sucesso!")
 
@@ -122,6 +75,7 @@ elif menu == "Relatório de Carga Horária":
     SELECT 
         p.nome,
         p.grau,
+        p.carga_horaria,
         p.carga_horaria_max,
         COALESCE(SUM(
             CASE a.tipo
@@ -137,13 +91,14 @@ elif menu == "Relatório de Carga Horária":
 
     for nome, grau, maximo, atual in dados:
         st.write(f"**{nome}** ({grau}): {atual}h / {maximo}h")
-# Cadastrar Aula em Curso
+
+# Cadastrar Aula (Professor e Disciplina) em Curso
 elif menu == "Cadastrar Aula em Curso":
     st.subheader("📚 Cadastro de Aula por Curso")
 
-    disciplinas = cursor.execute("SELECT id, nome FROM disciplinas").fetchall()
-    cursos = cursor.execute("SELECT id, nome FROM cursos").fetchall()
-    professores = cursor.execute("SELECT id, nome FROM professores").fetchall()
+    disciplinas = cursor.execute("SELECT codigo, nome FROM disciplinas").fetchall()
+    cursos = cursor.execute("SELECT codigo, nome FROM cursos").fetchall()
+    professores = cursor.execute("SELECT codigo, nome FROM professores").fetchall()
 
     disc_id = st.selectbox("Disciplina", disciplinas, format_func=lambda x: x[1])
     curso_id = st.selectbox("Curso", cursos, format_func=lambda x: x[1])
@@ -151,10 +106,26 @@ elif menu == "Cadastrar Aula em Curso":
     prof_id = st.selectbox("Professor", professores, format_func=lambda x: x[1])
 
     if st.button("Cadastrar Aula"):
+        # 1. Inserir aula
         cursor.execute("""
             INSERT INTO aulas (disciplina_id, curso_id, professor_id, tipo)
             VALUES (?, ?, ?, ?)
         """, (disc_id[0], curso_id[0], prof_id[0], tipo))
+        # 2. Buscar carga horária correspondente da disciplina
+        if tipo == "Teorica":
+            cursor.execute("SELECT carga_teorica FROM disciplinas WHERE id = ?", (disc_id[0],))
+        else:
+            cursor.execute("SELECT carga_pratica FROM disciplinas WHERE id = ?", (disc_id[0],))
+
+        carga_adicional = cursor.fetchone()[0]
+
+        # 3. Atualizar carga do professor
+        cursor.execute("""
+            UPDATE professores
+            SET carga_horaria = IFNULL(carga_horaria, 0) + ?
+            WHERE id = ?
+        """, (carga_adicional, prof_id[0]))
+
         conn.commit()
         st.success("Aula cadastrada com sucesso!")
 
