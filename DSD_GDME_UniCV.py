@@ -84,34 +84,44 @@ elif menu == "Cadastrar Aula em Curso":
 
     if st.button("Cadastrar Aula"):
         # 1. Inserir aula
+        # Verifique se já existe uma aula igual
         cursor.execute("""
-            INSERT INTO aulas (disciplina_id, curso_id, professor_id, tipo)
-            VALUES (?, ?, ?, ?)
+            SELECT 1 FROM aulas
+            WHERE disciplina_id = ? AND curso_id = ? AND professor_id = ? AND tipo = ?
         """, (disc_id[0], curso_id[0], prof_id[0], tipo))
-        # 2. Buscar carga horária correspondente da disciplina
-        if tipo == "Teorica":
-            cursor.execute("SELECT carga_teorica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
+        existe = cursor.fetchone()
+        if existe:
+            st.warning("Esta aula já foi cadastrada para este professor.")
         else:
-            cursor.execute("SELECT carga_pratica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
+            cursor.execute("""
+                INSERT INTO aulas (disciplina_id, curso_id, professor_id, tipo)
+                VALUES (?, ?, ?, ?)
+            """, (disc_id[0], curso_id[0], prof_id[0], tipo))
 
-        carga_adicional = cursor.fetchone()[0]
+            # 2. Buscar carga horária correspondente da disciplina
+            if tipo == "Teorica":
+                cursor.execute("SELECT carga_teorica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
+            else:
+                cursor.execute("SELECT carga_pratica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
 
-        # 3. Atualizar carga do professor
-        cursor.execute("""
-            UPDATE professores
-            SET carga_horaria = IFNULL(carga_horaria, 0) + ?
-            WHERE codigo = ?
-        """, (carga_adicional, prof_id[0]))
+            carga_adicional = cursor.fetchone()[0]
 
-        conn.commit()
-        st.success("Aula cadastrada com sucesso!")
+            # 3. Atualizar carga do professor
+            cursor.execute("""
+                UPDATE professores
+                SET carga_horaria = IFNULL(carga_horaria, 0) + ?
+                WHERE codigo = ?
+            """, (carga_adicional, prof_id[0]))
+
+            conn.commit()
+            st.success("Aula cadastrada com sucesso!")
 
 # RELATÓRIO DA CARGA HORÁRIA        
 elif menu == "Relatório de Carga Horária":
     st.subheader("📊 Relatório de Carga Horária por Professor")
 
     dados = cursor.execute("""
-        SELECT nome, grau, carga_horaria, carga_horaria_max
+        SELECT nome, grau, carga_horaria_max, carga_horaria
         FROM professores
         ORDER BY nome;
     """).fetchall()
