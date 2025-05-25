@@ -7,24 +7,24 @@ def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
     cursor.executescript('''
-        CREATE TABLE professores (
+        CREATE TABLE IF NOT EXISTS professores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
             titulacao TEXT CHECK (titulacao IN ('Licenciado', 'Mestre', 'Doutor')) NOT NULL,
             carga_max INTEGER NOT NULL
         );
-        CREATE TABLE cursos (
+        CREATE TABLE IF NOT EXISTS cursos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL
         );
-        CREATE TABLE disciplinas (
+        CREATE TABLE IF NOT EXISTS disciplinas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
             carga_total INTEGER NOT NULL,
             teorica INTEGER NOT NULL,
             pratica INTEGER NOT NULL
         );
-        CREATE TABLE atribuicoes (
+        CREATE TABLE IF NOT EXISTS atribuicoes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             disciplina_id INTEGER NOT NULL,
             curso_id INTEGER NOT NULL,
