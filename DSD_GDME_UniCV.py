@@ -90,9 +90,9 @@ elif menu == "Cadastrar Aula em Curso":
         """, (disc_id[0], curso_id[0], prof_id[0], tipo))
         # 2. Buscar carga horária correspondente da disciplina
         if tipo == "Teorica":
-            cursor.execute("SELECT carga_teorica FROM disciplinas WHERE id = ?", (disc_id[0],))
+            cursor.execute("SELECT carga_teorica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
         else:
-            cursor.execute("SELECT carga_pratica FROM disciplinas WHERE id = ?", (disc_id[0],))
+            cursor.execute("SELECT carga_pratica FROM disciplinas WHERE codigo = ?", (disc_id[0],))
 
         carga_adicional = cursor.fetchone()[0]
 
@@ -100,7 +100,7 @@ elif menu == "Cadastrar Aula em Curso":
         cursor.execute("""
             UPDATE professores
             SET carga_horaria = IFNULL(carga_horaria, 0) + ?
-            WHERE id = ?
+            WHERE codigo = ?
         """, (carga_adicional, prof_id[0]))
 
         conn.commit()
@@ -111,7 +111,7 @@ elif menu == "Relatório de Carga Horária":
     st.subheader("📊 Relatório de Carga Horária por Professor")
 
     dados = cursor.execute("""
-        SELECT nome, grau, carga_horaria_max, carga_horaria
+        SELECT nome, grau, carga_horaria, carga_horaria_max
         FROM professores
         ORDER BY nome;
     """).fetchall()
