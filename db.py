@@ -6,12 +6,12 @@ def conectar():
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
-    cursor.executescript(
+    cursor.execute(
         CREATE TABLE professores (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        titulacao TEXT CHECK (titulacao IN ('Licenciado', 'Mestre', 'Doutor')) NOT NULL,
-        carga_max INTEGER NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            titulacao TEXT CHECK (titulacao IN ('Licenciado', 'Mestre', 'Doutor')) NOT NULL,
+            carga_max INTEGER NOT NULL
         );
         CREATE TABLE cursos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
