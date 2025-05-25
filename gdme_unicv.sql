@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS professores (
     codigo TEXT PRIMARY KEY,
     nome TEXT NOT NULL,
     grau TEXT CHECK (grau IN ('Licenciado', 'Mestre', 'Doutor')) NOT NULL,
-    carga_horaria INTEGER NOT NULL
+    carga_horaria INTEGER DEFAULT 0,
     carga_horaria_max INTEGER NOT NULL
 );
 

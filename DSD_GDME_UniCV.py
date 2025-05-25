@@ -7,7 +7,9 @@ cursor = conn.cursor()
 
 # Função para criar as tabelas (executar uma vez)
 def criar_tabelas():
-    cursor.executescript(gdme_unicv.sql)
+    with open("gdme_unicv.sql", "r", encoding="utf-8") as f:
+        sql_script = f.read()
+    cursor.executescript(sql_script)
     conn.commit()
 
 criar_tabelas()
