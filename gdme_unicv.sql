@@ -39,12 +39,19 @@ CREATE TABLE IF NOT EXISTS aula_responsavel (
 CREATE TABLE IF NOT EXISTS aulas (
     codigo INTEGER PRIMARY KEY AUTOINCREMENT,
     disciplina_id INTEGER NOT NULL,
-    curso_id INTEGER NOT NULL,
     professor_id INTEGER NOT NULL,
     tipo TEXT CHECK (tipo IN ('Teorica', 'Pratica')) NOT NULL,
+    carga_horaria INTEGER,
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(codigo),
     FOREIGN KEY (curso_id) REFERENCES cursos(codigo),
     FOREIGN KEY (professor_id) REFERENCES professores(codigo)
+);
+
+-- Tabela para associar uma aula a vários cursos
+CREATE TABLE aula_cursos (
+    codigo INTEGER PRIMARY KEY AUTOINCREMENT,
+    aula_id INTEGER,
+    curso_id INTEGER
 );
 
 -- Trigger: atualiza carga horária ao inserir nova aula
