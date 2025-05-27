@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS aulas (
 );
 
 -- Tabela para associar uma aula a vários cursos
-CREATE TABLE aula_cursos (
+CREATE TABLE IF NOT EXISTS aula_cursos (
     codigo INTEGER PRIMARY KEY AUTOINCREMENT,
     aula_id INTEGER,
     curso_id INTEGER
