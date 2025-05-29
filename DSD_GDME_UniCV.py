@@ -20,14 +20,14 @@ criar_tabelas()
 
 st.title("📚 Gestão de Disciplinas - GDME Uni-CV")
 
-menu = st.sidebar.selectbox("Menu", ["Cadastrar Professor", "Cadastrar Disciplina", "Cadastrar Curso", "Cadastrar Aula em Curso", "Relatório de Carga Horária"])
+menu = st.sidebar.radio("Menu", ["Cadastrar Professor", "Cadastrar Disciplina", "Cadastrar Curso", "Cadastrar Aula em Curso", "Relatório de Carga Horária"])
 
 # CADASTRO DE PROFESSOR
 if menu == "Cadastrar Professor":
     st.subheader("👨‍🏫 Cadastro de Professor")
-    codigo = st.text_input("Código do professor")
-    nome = st.text_input("Nome do professor")
-    grau = st.selectbox("Grau Acadêmico", ["Licenciado", "Mestre", "Doutor"])
+    codigo = st.text_input(":blue[**Código do professor:**]")
+    nome = st.text_input(":blue[**Nome do professor:**]")
+    grau = st.selectbox(":blue[**Grau Acadêmico:**]", ["Licenciado", "Mestre", "Doutor"])
     if st.button("Salvar"):
         carga_horaria_max = 28 if grau in ['Licenciado', 'Mestre'] else 24
         cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria_max) VALUES (?, ?, ?, ?)", (codigo, nome, grau, carga_horaria_max))
