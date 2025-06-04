@@ -1,5 +1,5 @@
 from login import login_page
-from database import criar_tabela_professores, criar_tabela_disciplinas
+from DB_GDME import criar_tabela_professores, criar_tabela_disciplinas
 from disciplinas import disciplinas_page
 from professores import professores_page
 from cursos import cursos_page
