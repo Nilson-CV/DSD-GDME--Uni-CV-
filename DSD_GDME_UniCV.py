@@ -5,25 +5,61 @@ from io import BytesIO
 import pandas as pd
 from gerar_pdf import gerar_pdf_estilizado
 
-# 🔐 Senha fixa (você pode depois mover isso para st.secrets)
-SENHA_CORRETA = "minhasenha123"
-
-# Checa se o usuário já foi autenticado
+# --- LOGIN E NÍVEL DE ACESSO ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
+    st.session_state.usuario = ""
+    st.session_state.nivel = ""
 
-# Exibe tela de login se não estiver autenticado
+usuarios = st.secrets["usuarios"]
+niveis = st.secrets["niveis"]
+
 if not st.session_state.autenticado:
-    st.title("GDME (🔐 Acesso Restrito)")
-    senha = st.text_input("Digite a senha para acessar o sistema:", type="password")
+    st.title("🔐 Acesso ao Sistema")
+    usuario = st.text_input("Usuário")
+    senha = st.text_input("Senha", type="password")
 
     if st.button("Entrar"):
-        if senha == SENHA_CORRETA:
+        if usuario in usuarios and senha == usuarios[usuario]:
             st.session_state.autenticado = True
+            st.session_state.usuario = usuario
+            st.session_state.nivel = niveis.get(usuario, "usuario")
+            st.success("Login realizado com sucesso!")
+            st.rerun()
         else:
-            st.error("Senha incorreta!")
+            st.error("Usuário ou senha incorretos.")
+    st.stop()
 
-    st.stop()  # Impede o restante do app de carregar
+st.sidebar.write(f"👤 Usuário: {st.session_state.usuario}")
+st.sidebar.write(f"🔐 Nível: {st.session_state.nivel}")
+
+# Menus visíveis por nível
+opcoes = ["Pesquisar"]
+if st.session_state.nivel == "admin":
+    opcoes = ["Cadastrar", "Listar/Editar/Remover"] + opcoes
+    menu = st.sidebar.radio("Navegar para:", opcoes)
+
+
+
+# 🔐 Senha fixa (você pode depois mover isso para st.secrets)
+# SENHA_CORRETA = "minhasenha123"
+
+# Checa se o usuário já foi autenticado
+#if "autenticado" not in st.session_state:
+#    st.session_state.autenticado = False
+
+# Exibe tela de login se não estiver autenticado
+#if not st.session_state.autenticado:
+#    st.title("GDME (🔐 Acesso Restrito)")
+#    senha = st.text_input("Digite a senha para acessar o sistema:", type="password")
+#
+#    if st.button("Entrar"):
+#        if senha == SENHA_CORRETA:
+#            st.session_state.autenticado = True
+#        else:
+#            st.error("Senha incorreta!")
+#
+#    st.stop()  # Impede o restante do app de carregar
 
 
 # Conexão com banco
@@ -45,6 +81,9 @@ menu = st.sidebar.radio("Menu", ["Cadastrar Professor", "Lista de Professores", 
 
 # CADASTRO DE PROFESSOR
 if menu == "Cadastrar Professor":
+    if st.session_state.nivel != "admin":
+        st.error("Você não tem permissão para acessar esta seção.")
+        st.stop()
     st.subheader("👨‍🏫 Cadastro de Professor")
     codigo = st.text_input(":blue[**Código do professor:**]")
     nome = st.text_input(":blue[**Nome do professor:**]")
@@ -127,11 +166,13 @@ if menu == "Lista de Professores":
                         if st.button("Salvar", key=f"salvar_{prof[0]}"):
                             atualizar_professor(prof[0], novo_nome, novo_grau)
                             st.success("Professor atualizado!")
+                            st.rerun()
 
                     with col2:
                         if st.button("Remover", key=f"remover_{prof[0]}"):
                             remover_professor(prof[0])
                             st.warning("Professor removido.")
+                            st.rerun()
         else:
             st.info("Nenhum professor cadastrado ainda.")
     elif aba == "Pesquisar":
