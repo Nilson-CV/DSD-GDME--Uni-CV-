@@ -5,6 +5,27 @@ from io import BytesIO
 import pandas as pd
 from gerar_pdf import gerar_pdf_estilizado
 
+# 🔐 Senha fixa (você pode depois mover isso para st.secrets)
+SENHA_CORRETA = "minhasenha123"
+
+# Checa se o usuário já foi autenticado
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+
+# Exibe tela de login se não estiver autenticado
+if not st.session_state.autenticado:
+    st.title("GDME (🔐 Acesso Restrito)")
+    senha = st.text_input("Digite a senha para acessar o sistema:", type="password")
+
+    if st.button("Entrar"):
+        if senha == SENHA_CORRETA:
+            st.session_state.autenticado = True
+        else:
+            st.error("Senha incorreta!")
+
+    st.stop()  # Impede o restante do app de carregar
+
+
 # Conexão com banco
 conn = sqlite3.connect('gdme_unicv.db', check_same_thread=False)
 cursor = conn.cursor()
@@ -18,9 +39,9 @@ def criar_tabelas():
 
 criar_tabelas()
 
-st.title("📚 Gestão de Disciplinas - GDME Uni-CV")
+st.title("📚 Gestão de Disciplinas - GDME")
 
-menu = st.sidebar.radio("Menu", ["Cadastrar Professor", "Cadastrar Disciplina", "Cadastrar Curso", "Cadastrar Aula em Curso", "Relatório de Carga Horária"])
+menu = st.sidebar.radio("Menu", ["Cadastrar Professor", "Lista de Professores", "Cadastrar Disciplina", "Cadastrar Curso", "Cadastrar Aula em Curso", "Relatório de Carga Horária"])
 
 # CADASTRO DE PROFESSOR
 if menu == "Cadastrar Professor":
@@ -33,6 +54,103 @@ if menu == "Cadastrar Professor":
         cursor.execute("INSERT INTO professores (codigo, nome, grau, carga_horaria_max) VALUES (?, ?, ?, ?)", (codigo, nome, grau, carga_horaria_max))
         conn.commit()
         st.success(f"Professor **{nome.upper()}** cadastrado com sucesso!")
+if menu == "Lista de Professores":
+    # --- LISTAGEM ---
+    def atualizar_professor(codigo, novo_nome, novo_grau):
+        try:
+            conn = sqlite3.connect('gdme_unicv.db', check_same_thread=False)
+        except:
+            pass
+        cursor = conn.cursor()
+        cursor.execute("UPDATE professores SET nome = ?, grau = ? WHERE codigo = ?", (novo_nome, novo_grau, codigo))
+        conn.commit()
+        conn.close()
+
+    def remover_professor(codigo):
+        try:
+            conn = sqlite3.connect('gdme_unicv.db', check_same_thread=False)
+        except:
+            pass
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM professores WHERE codigo = ?", (codigo,))
+        conn.commit()
+        conn.close()
+
+    def buscar_professores(termo):
+        try:
+            conn = sqlite3.connect('gdme_unicv.db', check_same_thread=False)
+        except:
+            pass
+        cursor = conn.cursor()
+        cursor.execute("SELECT codigo, nome, grau FROM professores WHERE codigo LIKE ? OR nome LIKE ?", (f"%{termo}%", f"%{termo}%"))
+        resultados = cursor.fetchall()
+        conn.close()
+        return resultados
+
+    def dados_professores():
+        try:
+            conn = sqlite3.connect('gdme_unicv.db', check_same_thread=False)
+        except:
+            pass
+        cursor = conn.cursor()
+        cursor.execute("SELECT codigo, nome, grau FROM professores")
+        dados = cursor.fetchall()
+        conn.close()
+        return dados
+    
+    def listar_professores():
+        professores = dados_professores()
+        st.header("Professores Cadastrados")
+        if professores:
+            st.table(
+                {"Código": [p[0] for p in professores],
+                "Nome": [p[1] for p in professores],
+                "Grau Acadêmico": [p[2] for p in professores]}
+            )
+        else:
+            st.info("Nenhum professor cadastrado ainda.")
+    
+    st.button(" 👨‍🏫 Lista dos Professores do GDME", on_click=listar_professores)
+            
+    
+    aba = st.sidebar.radio("Menu", ["Cadastrar", "Listar/Editar/Remover", "Pesquisar"])
+    if aba == "Listar/Editar/Remover":
+        professores = dados_professores()
+        if professores:
+            for prof in professores:
+                with st.expander(f"{prof[1]} ({prof[0]})"):
+                    novo_nome = st.text_input("Nome", prof[1], key=f"nome_{prof[0]}")
+                    novo_grau = st.selectbox("Grau", ["Licenciado", "Mestre", "Doutor", "Outro"], index=["Licenciado", "Mestre", "Doutor", "Outro"].index(prof[2]), key=f"grau_{prof[0]}")
+
+                    col1, col2 = st.columns([1, 1])
+                    with col1:
+                        if st.button("Salvar", key=f"salvar_{prof[0]}"):
+                            atualizar_professor(prof[0], novo_nome, novo_grau)
+                            st.success("Professor atualizado!")
+
+                    with col2:
+                        if st.button("Remover", key=f"remover_{prof[0]}"):
+                            remover_professor(prof[0])
+                            st.warning("Professor removido.")
+        else:
+            st.info("Nenhum professor cadastrado ainda.")
+    elif aba == "Pesquisar":
+        st.header("Pesquisar Professor")
+
+        termo = st.text_input("Digite o nome ou código do professor")
+        if termo:
+            resultados = buscar_professores(termo)
+            if resultados:
+                st.table(
+                    {"Código": [p[0] for p in resultados],
+                    "Nome": [p[1] for p in resultados],
+                    "Grau Acadêmico": [p[2] for p in resultados]}
+                )
+            else:
+                st.info("Nenhum resultado encontrado.")
+
+
+    
 
 # CADASTRO DE DISCIPLINA
 elif menu == "Cadastrar Disciplina":
