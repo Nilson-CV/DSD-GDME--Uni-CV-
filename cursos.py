@@ -1,5 +1,5 @@
 import streamlit as st
-from database import (
+from DB_GDME import (
     cadastrar_curso, listar_cursos, buscar_cursos,
     atualizar_curso, remover_curso
 )

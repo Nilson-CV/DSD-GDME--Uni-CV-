@@ -12,7 +12,9 @@ def criar_tabela_professores():
         CREATE TABLE IF NOT EXISTS professores (
             codigo TEXT PRIMARY KEY,
             nome TEXT NOT NULL,
-            grau TEXT NOT NULL
+            grau TEXT NOT NULL,
+            email TEXT,
+            resumo TEXT
         );
     """)
     conn.commit()
@@ -22,7 +24,7 @@ def cadastrar_professor(codigo, nome, grau):
     conn = conectar_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO professores (codigo, nome, grau) VALUES (?, ?, ?)", (codigo, nome, grau))
+        cursor.execute("INSERT INTO professores (codigo, nome, grau, email, resumo) VALUES (?, ?, ?, ?, ?)", (codigo, nome, grau, email, resumo))
         conn.commit()
         st.success("Professor cadastrado.")
     except:
@@ -32,7 +34,7 @@ def cadastrar_professor(codigo, nome, grau):
 def listar_professores():
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT codigo, nome, grau FROM professores")
+    cursor.execute("SELECT codigo, nome, grau, email, resumo FROM professores")
     dados = cursor.fetchall()
     conn.close()
     return dados
@@ -40,7 +42,11 @@ def listar_professores():
 def atualizar_professor(codigo, nome, grau):
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE professores SET nome = ?, grau = ? WHERE codigo = ?", (nome, grau, codigo))
+    cursor.execute("""
+        UPDATE professores
+        SET nome = ?, grau = ?, email = ?, resumo = ?
+        WHERE codigo = ?
+    """, (nome, grau, email, resumo, codigo))
     conn.commit()
     conn.close()
 

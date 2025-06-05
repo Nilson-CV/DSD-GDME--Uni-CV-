@@ -1,5 +1,5 @@
 import streamlit as st
-from database import (
+from DB_GDME import (
     listar_professores, listar_disciplinas, listar_cursos,
     cadastrar_aula, listar_aulas
 )

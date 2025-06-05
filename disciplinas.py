@@ -1,5 +1,5 @@
 import streamlit as st
-from database import cadastrar_disciplina, listar_disciplinas, buscar_disciplinas
+from DB_GDME import cadastrar_disciplina, listar_disciplinas, buscar_disciplinas
 
 def disciplinas_page():
     st.title("📚 Gestão de Disciplinas")
