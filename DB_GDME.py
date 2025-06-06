@@ -14,17 +14,18 @@ def criar_tabela_professores():
             nome TEXT NOT NULL,
             grau TEXT NOT NULL,
             email TEXT,
-            resumo TEXT
+            resumo TEXT,
+            foto TEXT 
         );
     """)
     conn.commit()
     conn.close()
 
-def cadastrar_professor(codigo, nome, grau):
+def cadastrar_professor(codigo, nome, grau, email, resumo, foto):
     conn = conectar_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO professores (codigo, nome, grau, email, resumo) VALUES (?, ?, ?, ?, ?)", (codigo, nome, grau, email, resumo))
+        cursor.execute("INSERT INTO professores (codigo, nome, grau, email, resumo, foto) VALUES (?, ?, ?, ?, ?, ?)", (codigo, nome, grau, email, resumo))
         conn.commit()
         st.success("Professor cadastrado.")
     except:
@@ -34,12 +35,12 @@ def cadastrar_professor(codigo, nome, grau):
 def listar_professores():
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT codigo, nome, grau, email, resumo FROM professores")
+    cursor.execute("SELECT codigo, nome, grau, email, resumo, foto FROM professores")
     dados = cursor.fetchall()
     conn.close()
     return dados
 
-def atualizar_professor(codigo, nome, grau):
+def atualizar_professor(codigo, nome, grau, email, resumo):
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -53,7 +54,7 @@ def atualizar_professor(codigo, nome, grau):
 def buscar_professores(termo):
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT codigo, nome, grau FROM professores WHERE nome LIKE ? OR codigo LIKE ?", (f"%{termo}%", f"%{termo}%"))
+    cursor.execute("SELECT codigo, nome, grau, email, resumo FROM professores WHERE nome LIKE ? OR codigo LIKE ?", (f"%{termo}%", f"%{termo}%"))
     resultados = cursor.fetchall()
     conn.close()
     return resultados
