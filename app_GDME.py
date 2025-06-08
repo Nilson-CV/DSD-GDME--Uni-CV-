@@ -7,6 +7,9 @@ from cursos import cursos_page
 from DB_GDME import criar_tabela_aulas
 from aulas import aulas_page
 
+
+
+
 criar_tabela_professores()
 criar_tabela_disciplinas()
 criar_tabela_cursos()
@@ -35,7 +38,6 @@ st.sidebar.markdown(f"""
     </p>
 """, unsafe_allow_html=True)
 
-
 paginas = {
     "👨‍🏫  PROFESSORES": professores_page,
     "📚  DISCIPLINAS": disciplinas_page,
@@ -54,8 +56,3 @@ if st.sidebar.button("🔒 Logout"):
 st.sidebar.markdown("<h3>📌 Selecione uma das Opções:</h3>", unsafe_allow_html=True)
 selecao = st.sidebar.radio("",list(paginas.keys()))
 paginas[selecao]()
-
-
-
-
-

@@ -15,13 +15,14 @@ def disciplinas_page():
         with st.form("form_disciplina"):
             codigo = st.text_input("Código da Disciplina")
             nome = st.text_input("Nome da Disciplina")
+            semestre = st.selectbox("Semestre da Disciplina", ["1º", "2º"])
             horas_teoricas = st.number_input("Horas Teóricas", min_value=0, step=1)
             horas_praticas = st.number_input("Horas Práticas", min_value=0, step=1)
             enviar = st.form_submit_button("Cadastrar")
 
             if enviar:
                 if codigo and nome:
-                    cadastrar_disciplina(codigo, nome, int(horas_teoricas), int(horas_praticas))
+                    cadastrar_disciplina(codigo, nome, semestre, int(horas_teoricas), int(horas_praticas))
                 else:
                     st.warning("Preencha todos os campos.")
 
@@ -33,8 +34,9 @@ def disciplinas_page():
             st.table({
                 "Código": [d[0] for d in disciplinas],
                 "Nome": [d[1] for d in disciplinas],
-                "Horas Teóricas": [d[2] for d in disciplinas],
-                "Horas Práticas": [d[3] for d in disciplinas],
+                "Semestre": [d[2] for d in disciplinas],
+                "Horas Teóricas": [d[3] for d in disciplinas],
+                "Horas Práticas": [d[4] for d in disciplinas],
             })
         else:
             st.info("Nenhuma disciplina cadastrada.")
@@ -48,8 +50,9 @@ def disciplinas_page():
                 st.table({
                     "Código": [r[0] for r in resultados],
                     "Nome": [r[1] for r in resultados],
-                    "Horas Teóricas": [r[2] for r in resultados],
-                    "Horas Práticas": [r[3] for r in resultados]
+                    "Semestre": [r[2] for r in resultados],
+                    "Horas Teóricas": [r[3] for r in resultados],
+                    "Horas Práticas": [r[4] for r in resultados]
                 })
             else:
                 st.info("Nenhuma disciplina encontrada.")
@@ -68,13 +71,14 @@ def disciplinas_page():
         for disc in disciplinas:
             with st.expander(f"{disc[1]} ({disc[0]})"):
                 novo_nome = st.text_input("Nome", disc[1], key=f"nome_{disc[0]}")
-                nova_teorica = st.number_input("Horas Teóricas", min_value=0, step=1, value=disc[2], key=f"ht_{disc[0]}")
-                nova_pratica = st.number_input("Horas Práticas", min_value=0, step=1, value=disc[3], key=f"hp_{disc[0]}")
+                novo_semestre = st.selectbox("Semestre", ["1º", "2º"], key=f"semestre_{disc[0]}")
+                nova_teorica = st.number_input("Horas Teóricas", min_value=0, step=1, value=disc[3], key=f"ht_{disc[0]}")
+                nova_pratica = st.number_input("Horas Práticas", min_value=0, step=1, value=disc[4], key=f"hp_{disc[0]}")
 
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button("Salvar Alterações", key=f"salvar_{disc[0]}"):
-                        atualizar_disciplina(disc[0], novo_nome, nova_teorica, nova_pratica)
+                        atualizar_disciplina(disc[0], novo_nome, novo_semestre, nova_teorica, nova_pratica)
                         st.success("Disciplina atualizada.")
                 with col2:
                     if st.button("Remover Disciplina", key=f"remover_{disc[0]}"):

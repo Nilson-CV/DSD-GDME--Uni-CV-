@@ -25,12 +25,27 @@ def cadastrar_professor(codigo, nome, grau, email, resumo, foto):
     conn = conectar_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO professores (codigo, nome, grau, email, resumo, foto) VALUES (?, ?, ?, ?, ?, ?)", (codigo, nome, grau, email, resumo))
+        cursor.execute("INSERT INTO professores (codigo, nome, grau, email, resumo, foto) VALUES (?, ?, ?, ?, ?, ?)", (codigo, nome, grau, email, resumo, foto))
         conn.commit()
         st.success("Professor cadastrado.")
     except:
         st.error("Erro: código já existe.")
     conn.close()
+
+def gerar_proximo_codigo_professor():
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT codigo FROM professores WHERE codigo LIKE 'PME%' ORDER BY codigo DESC LIMIT 1")
+    ultimo = cursor.fetchone()
+    conn.close()
+
+    if ultimo:
+        num = int(ultimo[0][3:]) + 1  # extrai o número após "PME" e incrementa
+    else:
+        num = 1
+
+    return f"PME{num:02d}"  # garante dois dígitos com zero à esquerda
+
 
 def listar_professores():
     conn = conectar_db()
@@ -40,14 +55,21 @@ def listar_professores():
     conn.close()
     return dados
 
-def atualizar_professor(codigo, nome, grau, email, resumo):
+def atualizar_professor(codigo, nome, grau, email, resumo, foto=None):
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE professores
-        SET nome = ?, grau = ?, email = ?, resumo = ?
-        WHERE codigo = ?
-    """, (nome, grau, email, resumo, codigo))
+    if foto:
+        cursor.execute("""
+            UPDATE professores
+            SET nome = ?, grau = ?, email = ?, resumo = ?, foto = ?
+            WHERE codigo = ?
+        """, (nome, grau, email, resumo, foto, codigo))
+    else:
+        cursor.execute("""
+            UPDATE professores
+            SET nome = ?, grau = ?, email = ?, resumo = ?
+            WHERE codigo = ?
+        """, (nome, grau, email, resumo, codigo))
     conn.commit()
     conn.close()
 
@@ -75,20 +97,23 @@ def criar_tabela_disciplinas():
         CREATE TABLE IF NOT EXISTS disciplinas (
             codigo TEXT PRIMARY KEY,
             nome TEXT NOT NULL,
+            semestre TEXT NOT NULL,
             horas_teoricas INTEGER,
             horas_praticas INTEGER
         );
     """)
+    cursor.execute("ALTER TABLE disciplinas ADD COLUMN semestre TEXT")
     conn.commit()
     conn.close()
 
-def cadastrar_disciplina(codigo, nome, horas_teoricas, horas_praticas):
+
+def cadastrar_disciplina(codigo, nome, semestre, horas_teoricas, horas_praticas):
     conn = conectar_db()
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "INSERT INTO disciplinas (codigo, nome, horas_teoricas, horas_praticas) VALUES (?, ?, ?, ?)",
-            (codigo, nome, horas_teoricas, horas_praticas)
+            "INSERT INTO disciplinas (codigo, nome, semestre, horas_teoricas, horas_praticas) VALUES (?, ?, ?, ?, ?)",
+            (codigo, nome, semestre, horas_teoricas, horas_praticas)
         )
         conn.commit()
         st.success("Disciplina cadastrada com sucesso.")
@@ -99,7 +124,7 @@ def cadastrar_disciplina(codigo, nome, horas_teoricas, horas_praticas):
 def listar_disciplinas():
     conn = conectar_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT codigo, nome, horas_teoricas, horas_praticas FROM disciplinas")
+    cursor.execute("SELECT codigo, nome, semestre, horas_teoricas, horas_praticas FROM disciplinas")
     resultado = cursor.fetchall()
     conn.close()
     return resultado
@@ -116,8 +141,8 @@ def atualizar_disciplina(codigo, nome, horas_teoricas, horas_praticas):
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE disciplinas SET nome = ?, horas_teoricas = ?, horas_praticas = ? WHERE codigo = ?",
-        (nome, horas_teoricas, horas_praticas, codigo)
+        "UPDATE disciplinas SET nome = ?, semestre = ?, horas_teoricas = ?, horas_praticas = ? WHERE codigo = ?",
+        (nome, semestre, horas_teoricas, horas_praticas, codigo)
     )
     conn.commit()
     conn.close()
