@@ -1,6 +1,6 @@
 import streamlit as st
 from login import login_page
-from DB_GDME import criar_tabela_professores, criar_tabela_disciplinas, criar_tabela_cursos, criar_tabela_aulas
+from DB_GDME import criar_tabela_professores, criar_tabela_disciplinas, criar_tabela_cursos, criar_tabela_aulas, criar_tabela_aulas_cursos
 from disciplinas import disciplinas_page
 from professores import professores_page
 from cursos import cursos_page

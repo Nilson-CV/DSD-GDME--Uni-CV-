@@ -271,7 +271,7 @@ def buscar_aulas_por_professor(cod_prof):
     cursor.execute("""
         SELECT 
             a.id, d.nome, a.tipo, a.horas, a.sala, a.horario_inicio,
-            d.codigo, a.disciplina_codigo
+            d.codigo, a.disciplina_codigo, a.dia_semana
         FROM aulas a
         JOIN disciplinas d ON a.disciplina_codigo = d.codigo
         WHERE a.professor_codigo = ?
@@ -295,12 +295,43 @@ def buscar_aulas_por_professor(cod_prof):
             "horas": aula[3],
             "sala": aula[4],
             "horario_inicio": aula[5],
+            "disciplina_codigo": aula[6],
+            "dia_semana": aula[7],
             "cursos": cursos
         })
     conn.close()
     return dados_finais
 
+def atualizar_aula(id_aula, tipo, horas, sala, horario_inicio, dia_semana):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE aulas
+        SET tipo=?, horas=?, sala=?, horario_inicio=?, dia_semana=?
+        WHERE id=?
+    """, (tipo, horas, sala, horario_inicio, dia_semana, id_aula))
+    conn.commit()
+    conn.close()
 
+def remover_aula(id_aula):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM aulas_cursos WHERE id_aula=?", (id_aula,))
+    cursor.execute("DELETE FROM aulas WHERE id=?", (id_aula,))
+    conn.commit()
+    conn.close()
+
+def atualizar_cursos_aula(id_aula, cursos_semestres):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM aulas_cursos WHERE id_aula=?", (id_aula,))
+    for curso_codigo, semestre in cursos_semestres:
+        cursor.execute("""
+            INSERT INTO aulas_cursos (id_aula, curso_codigo, semestre)
+            VALUES (?, ?, ?)
+        """, (id_aula, curso_codigo, semestre))
+    conn.commit()
+    conn.close()
 
 
 
