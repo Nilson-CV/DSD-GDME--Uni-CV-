@@ -290,6 +290,7 @@ def buscar_aulas_por_professor(cod_prof):
         """, (id_aula,))
         cursos = cursor.fetchall()
         dados_finais.append({
+            "id": id_aula,
             "disciplina": aula[1],
             "tipo": aula[2],
             "horas": aula[3],

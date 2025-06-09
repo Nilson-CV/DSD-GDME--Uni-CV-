@@ -86,11 +86,11 @@ def aulas_page():
                                 """, unsafe_allow_html=True)
 
                         with col2:
-                            if st.button(f"✏️ Editar", key=f"edit_{aula['codigo']}"):
+                            if st.button(f"✏️ Editar", key=f"edit_{aula['id']}"):
                                 st.session_state[f"edit_mode_{aula['id']}"] = True
                             if st.button(f"🗑️ Remover", key=f"del_{aula['id']}"):
                                 remover_aula(aula["id"])
-                                st.experimental_rerun()      
+                                st.rerun()      
 
                         # Se estiver em modo edição, mostrar formulário
                         if st.session_state.get(f"edit_mode_{aula['id']}", False):
