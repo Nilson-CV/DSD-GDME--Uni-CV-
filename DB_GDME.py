@@ -219,7 +219,7 @@ def criar_tabela_aulas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             professor_codigo TEXT NOT NULL,
             disciplina_codigo TEXT NOT NULL,
-            tipo TEXT CHECK(tipo IN ('Teórica', 'Prática')) NOT NULL,
+            tipo TEXT CHECK(tipo IN ('teorica', 'pratica')) NOT NULL,
             horas INTEGER NOT NULL,
             sala TEXT,
             horario_inicio TEXT, -- Ex: '14:00'
@@ -234,7 +234,7 @@ def criar_tabela_aulas_cursos():
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE aulas_cursos (
+        CREATE TABLE IF NOT EXISTS aulas_cursos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             id_aula INTEGER NOT NULL,
             curso_codigo TEXT NOT NULL,

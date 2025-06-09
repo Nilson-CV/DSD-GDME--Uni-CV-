@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta, time
 from DB_GDME import (
-    listar_professores, listar_disciplinas, listar_cursos, inserir_aula, buscar_aulas_por_professor
+    listar_professores, listar_disciplinas, listar_cursos, inserir_aula, buscar_aulas_por_professor, aulas_cursos
 )
 
 def aulas_page():
@@ -20,7 +20,7 @@ def aulas_page():
 
             prof = st.selectbox("👨‍🏫 Professor", professores, format_func=lambda x: f"{x[1]} ({x[0]})")
             disc = st.selectbox("📘 Disciplina", disciplinas, format_func=lambda x: f"{x[1]} ({x[0]})")
-            tipo = st.radio("📚 Tipo de Aula", ["Teórica", "Prática"], horizontal=True)
+            tipo = st.radio("📚 Tipo de Aula", ["teorica", "pratica"], horizontal=True)
             horas = st.number_input("⏱️ Duração da aula (horas)", min_value=1, max_value=5, value=2)
             sala = st.text_input("🏫 Sala", value="A101")
             horario_inicio = st.time_input("🕒 Horário de Início")

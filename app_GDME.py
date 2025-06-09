@@ -14,6 +14,7 @@ criar_tabela_professores()
 criar_tabela_disciplinas()
 criar_tabela_cursos()
 criar_tabela_aulas()
+criar_tabela_aulas_cursos()
 
 
 
