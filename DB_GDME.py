@@ -102,7 +102,6 @@ def criar_tabela_disciplinas():
             horas_praticas INTEGER
         );
     """)
-    cursor.execute("ALTER TABLE disciplinas ADD COLUMN semestre TEXT")
     conn.commit()
     conn.close()
 
@@ -137,7 +136,7 @@ def buscar_disciplinas(termo):
     conn.close()
     return resultado
 
-def atualizar_disciplina(codigo, nome, horas_teoricas, horas_praticas):
+def atualizar_disciplina(codigo, nome, semestre, horas_teoricas, horas_praticas):
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -220,16 +219,102 @@ def criar_tabela_aulas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             professor_codigo TEXT NOT NULL,
             disciplina_codigo TEXT NOT NULL,
-            curso_codigo TEXT NOT NULL,
             tipo TEXT CHECK(tipo IN ('teorica', 'pratica')) NOT NULL,
-            UNIQUE (disciplina_codigo, curso_codigo, tipo),
+            horas INTEGER NOT NULL,
+            sala TEXT,
+            horario_inicio TEXT, -- Ex: '14:00'
             FOREIGN KEY (professor_codigo) REFERENCES professores(codigo),
-            FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo),
+            FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo)
+        );
+    """)
+    conn.commit()
+    conn.close()
+
+def criar_tabela_aulas_cursos():
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE aulas_cursos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_aula INTEGER NOT NULL,
+            curso_codigo TEXT NOT NULL,
+            semestre TEXT,
+            FOREIGN KEY (id_aula) REFERENCES aulas(id),
             FOREIGN KEY (curso_codigo) REFERENCES cursos(codigo)
         );
     """)
     conn.commit()
     conn.close()
+
+def inserir_aula(professor, disciplina, tipo, horas, sala, horario_inicio, cursos_semestres):
+    conn = conectar_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO aulas (professor_codigo, disciplina_codigo, tipo, horas, sala, horario_inicio)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (professor, disciplina, tipo, horas, sala, horario_inicio))
+    id_aula = cursor.lastrowid
+
+    for curso, semestre in cursos_semestres:
+        cursor.execute("""
+            INSERT INTO aulas_cursos (id_aula, curso_codigo, semestre)
+            VALUES (?, ?, ?)
+        """, (id_aula, curso, semestre))
+
+    conn.commit()
+    conn.close()
+
+def buscar_aulas_por_professor(cod_prof):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            a.id, d.nome, a.tipo, a.horas, a.sala, a.horario_inicio,
+            d.codigo, a.disciplina_codigo
+        FROM aulas a
+        JOIN disciplinas d ON a.disciplina_codigo = d.codigo
+        WHERE a.professor_codigo = ?
+        ORDER BY d.nome
+    """, (cod_prof,))
+    aulas = cursor.fetchall()
+
+    dados_finais = []
+    for aula in aulas:
+        id_aula = aula[0]
+        cursor.execute("""
+            SELECT c.nome, ac.semestre 
+            FROM aulas_cursos ac
+            JOIN cursos c ON ac.curso_codigo = c.codigo
+            WHERE ac.id_aula = ?
+        """, (id_aula,))
+        cursos = cursor.fetchall()
+        dados_finais.append({
+            "disciplina": aula[1],
+            "tipo": aula[2],
+            "horas": aula[3],
+            "sala": aula[4],
+            "horario_inicio": aula[5],
+            "cursos": cursos
+        })
+    conn.close()
+    return dados_finais
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def cadastrar_aula(professor, disciplina, curso, tipo):
     conn = conectar_db()
@@ -268,3 +353,23 @@ def listar_aulas():
     resultado = cursor.fetchall()
     conn.close()
     return resultado
+
+def buscar_aulas_por_professor(codigo_prof):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            d.codigo, d.nome, a.tipo, c.nome, d.semestre,
+            a.total_aulas,
+            d.horas_teoricas, d.horas_praticas
+        FROM aulas a
+        JOIN disciplinas d ON a.cod_disciplina = d.codigo
+        JOIN cursos c ON a.cod_curso = c.codigo
+        WHERE a.cod_professor = ?
+        ORDER BY d.nome, a.tipo
+    """, (codigo_prof,))
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados
+
+

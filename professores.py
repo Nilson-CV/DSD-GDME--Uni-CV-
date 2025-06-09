@@ -3,7 +3,7 @@ import base64
 import pandas as pd
 from DB_GDME import (
     cadastrar_professor, listar_professores, atualizar_professor,
-    remover_professor, buscar_professores, gerar_proximo_codigo_professor
+    remover_professor, buscar_professores, gerar_proximo_codigo_professor, buscar_aulas_por_professor
 )
 
 
@@ -175,7 +175,45 @@ def professores_page():
                 
             st.markdown("**📝 Área de Investigação:**")
             st.info(prof[4] or "Sem resumo disponível.")
+        with tab4:
+            st.subheader("👨‍🏫 Aulas atribuídas ao professor")
 
+            professores = listar_professores()
+            nomes = [f"{p[1]} ({p[0]})" for p in professores]
+            selecionado = st.selectbox("📘 Selecione um professor", nomes)
+
+            prof = next((p for p in professores if f"{p[1]} ({p[0]})" == selecionado), None)
+            if not prof:
+                st.warning("Professor não encontrado.")
+                st.stop()
+
+            codigo_prof = prof[0]
+
+            # Obtemos aulas desse professor (você precisa ter essa função no banco de dados)
+            aulas = buscar_aulas_por_professor(codigo_prof)
+
+            if not aulas:
+                st.info("❌ Nenhuma aula atribuída.")
+            else:
+                disciplinas = {}
+                for aula in aulas:
+                    cod_disc, nome_disc, tipo, curso_nome, semestre, horas = aula
+                    if cod_disc not in disciplinas:
+                        disciplinas[cod_disc] = {"nome": nome_disc, "aulas": []}
+                    disciplinas[cod_disc]["aulas"].append((tipo, curso_nome, semestre, horas))
+
+                for cod_disc, dados in disciplinas.items():
+                    with st.expander(f"📚 {dados['nome']} ({cod_disc})"):
+                        for tipo, curso, semestre, horas in dados["aulas"]:
+                            st.markdown(f"""
+                            <div style='padding:10px; margin-bottom:10px; border-left: 5px solid #4CAF50; background-color: #f9f9f9;'>
+                                <b>Tipo:</b> {tipo}<br>
+                                <b>Curso:</b> {curso}<br>
+                                <b>Semestre:</b> {semestre}<br>
+                                <b>Carga Horária:</b> {horas} horas
+                            </div>
+                            """, unsafe_allow_html=True)
+        
     else:
         #menu = st.radio("Menu", ["Informações do Professor"]) 
         tab1, tab2 = st.tabs(["👤 INFORMAÇÕES do PROFESSOR", "📚  DISCIPLINAS LECIONADAS"])
@@ -222,6 +260,44 @@ def professores_page():
                 
             st.markdown("**📝 Área de Investigação:**")
             st.info(prof[4] or "Sem resumo disponível.")
-   
+        with tab2:
+            st.subheader("👨‍🏫 Aulas atribuídas ao professor")
+
+            professores = listar_professores()
+            nomes = [f"{p[1]} ({p[0]})" for p in professores]
+            selecionado = st.selectbox("📘 Selecione um professor", nomes)
+
+            prof = next((p for p in professores if f"{p[1]} ({p[0]})" == selecionado), None)
+            if not prof:
+                st.warning("Professor não encontrado.")
+                st.stop()
+
+            codigo_prof = prof[0]
+
+            # Obtemos aulas desse professor (você precisa ter essa função no banco de dados)
+            aulas = buscar_aulas_por_professor(codigo_prof)
+
+            if not aulas:
+                st.info("❌ Nenhuma aula atribuída.")
+            else:
+                disciplinas = {}
+                for aula in aulas:
+                    cod_disc, nome_disc, tipo, curso_nome, semestre, horas = aula
+                    if cod_disc not in disciplinas:
+                        disciplinas[cod_disc] = {"nome": nome_disc, "aulas": []}
+                    disciplinas[cod_disc]["aulas"].append((tipo, curso_nome, semestre, horas))
+
+                for cod_disc, dados in disciplinas.items():
+                    with st.expander(f"📚 {dados['nome']} ({cod_disc})"):
+                        for tipo, curso, semestre, horas in dados["aulas"]:
+                            st.markdown(f"""
+                            <div style='padding:10px; margin-bottom:10px; border-left: 5px solid #4CAF50; background-color: #f9f9f9;'>
+                                <b>Tipo:</b> {tipo}<br>
+                                <b>Curso:</b> {curso}<br>
+                                <b>Semestre:</b> {semestre}<br>
+                                <b>Carga Horária:</b> {horas} horas
+                            </div>
+                            """, unsafe_allow_html=True)
+
         
 

@@ -1,9 +1,9 @@
 import streamlit as st
-from DB_GDME import cadastrar_disciplina, listar_disciplinas, buscar_disciplinas
+from DB_GDME import cadastrar_disciplina, listar_disciplinas, buscar_disciplinas, atualizar_disciplina, remover_disciplina
 
 def disciplinas_page():
     st.title("📚 Gestão de Disciplinas")
-
+    
     menu = st.radio("Menu", ["Cadastrar", "Listar/Editar/Remover", "Pesquisar"])
 
     if menu == "Cadastrar":
@@ -71,7 +71,7 @@ def disciplinas_page():
         for disc in disciplinas:
             with st.expander(f"{disc[1]} ({disc[0]})"):
                 novo_nome = st.text_input("Nome", disc[1], key=f"nome_{disc[0]}")
-                novo_semestre = st.selectbox("Semestre", ["1º", "2º"], key=f"semestre_{disc[0]}")
+                novo_semestre = st.selectbox("Semestre", disc[2], key=f"semestre_{disc[0]}")
                 nova_teorica = st.number_input("Horas Teóricas", min_value=0, step=1, value=disc[3], key=f"ht_{disc[0]}")
                 nova_pratica = st.number_input("Horas Práticas", min_value=0, step=1, value=disc[4], key=f"hp_{disc[0]}")
 
