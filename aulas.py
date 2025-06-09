@@ -20,7 +20,7 @@ def aulas_page():
 
             prof = st.selectbox("👨‍🏫 Professor", professores, format_func=lambda x: f"{x[1]} ({x[0]})")
             disc = st.selectbox("📘 Disciplina", disciplinas, format_func=lambda x: f"{x[1]} ({x[0]})")
-            tipo = st.radio("📚 Tipo de Aula", ["Teorica", "Pratica"], horizontal=True)
+            tipo = st.radio("📚 Tipo de Aula", ["Teórica", "Prática"], horizontal=True)
             horas = st.number_input("⏱️ Duração da aula (horas)", min_value=1, max_value=5, value=2)
             sala = st.text_input("🏫 Sala", value="A101")
             horario_inicio = st.time_input("🕒 Horário de Início")

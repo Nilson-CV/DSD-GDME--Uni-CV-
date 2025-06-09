@@ -219,7 +219,7 @@ def criar_tabela_aulas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             professor_codigo TEXT NOT NULL,
             disciplina_codigo TEXT NOT NULL,
-            tipo TEXT CHECK(tipo IN ('teorica', 'pratica')) NOT NULL,
+            tipo TEXT CHECK(tipo IN ('Teórica', 'Prática')) NOT NULL,
             horas INTEGER NOT NULL,
             sala TEXT,
             horario_inicio TEXT, -- Ex: '14:00'
