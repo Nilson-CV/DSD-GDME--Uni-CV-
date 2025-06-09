@@ -9,7 +9,6 @@ from aulas import aulas_page
 
 
 
-
 criar_tabela_professores()
 criar_tabela_disciplinas()
 criar_tabela_cursos()
