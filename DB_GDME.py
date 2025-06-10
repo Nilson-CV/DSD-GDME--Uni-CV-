@@ -239,6 +239,7 @@ def criar_tabela_aulas_cursos():
             id_aula INTEGER NOT NULL,
             curso_codigo TEXT NOT NULL,
             semestre TEXT,
+            ano_curso TEXT,
             FOREIGN KEY (id_aula) REFERENCES aulas(id),
             FOREIGN KEY (curso_codigo) REFERENCES cursos(codigo)
         );
@@ -246,21 +247,21 @@ def criar_tabela_aulas_cursos():
     conn.commit()
     conn.close()
 
-def inserir_aula(professor, disciplina, tipo, horas, sala, horario_inicio, cursos_semestres):
+def inserir_aula(professor, disciplina, tipo, horas, sala, horario_inicio, dia_semana, cursos_semestres):
     conn = conectar_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO aulas (professor_codigo, disciplina_codigo, tipo, horas, sala, horario_inicio)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (professor, disciplina, tipo, horas, sala, horario_inicio))
+        INSERT INTO aulas (professor_codigo, disciplina_codigo, tipo, horas, sala, horario_inicio, dia_semana)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (professor, disciplina, tipo, horas, sala, horario_inicio, dia_semana))
     id_aula = cursor.lastrowid
-
-    for curso, semestre in cursos_semestres:
+    
+    for curso, semestre, ano_curso in cursos_semestres:
         cursor.execute("""
-            INSERT INTO aulas_cursos (id_aula, curso_codigo, semestre)
+            INSERT INTO aulas_cursos (id_aula, curso_codigo, semestre, ano_curso)
             VALUES (?, ?, ?)
-        """, (id_aula, curso, semestre))
+        """, (id_aula, curso, semestre, ano_curso))
 
     conn.commit()
     conn.close()

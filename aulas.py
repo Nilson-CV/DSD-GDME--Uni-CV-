@@ -25,6 +25,7 @@ def aulas_page():
             horas = st.number_input("⏱️ Duração da aula (horas)", min_value=1, max_value=5, value=2)
             sala = st.text_input("🏫 Sala", value="A101")
             horario_inicio = st.time_input("🕒 Horário de Início")
+            dia_semana = st.selectbox("📅 Filtrar por dia da semana (opcional):", ["", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"])
 
             # Calcular horário de término
             inicio = datetime.strptime(str(horario_inicio), "%H:%M:%S")
@@ -33,32 +34,36 @@ def aulas_page():
 
             st.markdown("### 👥 Cursos e Semestre")
             cursos_selecionados = st.multiselect("Selecione os cursos:", cursos, format_func=lambda x: f"{x[1]} ({x[0]})")
-
+        
             cursos_semestres_ano = []
             for curso in cursos_selecionados:
                 semestre = st.text_input(f"📅 Semestre para o curso {curso[1]}", key=f"sem_{curso[0]}")
-                ano = st.text_input(f"Ano letivo para o curso {curso[1]}", key=f"ano_{curso[0]}")
-                if semestre:
-                    cursos_semestres_ano.append((curso[0], semestre, ano))
+                ano_curso = st.text_input(f"Ano letivo para o curso {curso[1]}", key=f"ano_{curso[0]}")
+                if semestre and ano_curso:
+                    cursos_semestres_ano.append((curso[0], semestre, ano_curso))
 
-            for curso, semestre, ano in cursos_semestres_ano:
+            for curso, semestre, ano_curso in cursos_semestres_ano:
+                conn = conectar_db()
+                cursor = conn.cursor()
                 cursor.execute("""
-                                INSERT INTO aulas_cursos (id_aula, curso_codigo, semestre, ano)
-                                VALUES (?, ?, ?, ?)
-                                """, (id_aula, curso, semestre, ano))
+                                INSERT INTO aulas_cursos (curso_codigo, semestre, ano_curso)
+                                VALUES (?, ?, ?)
+                                """, (curso, semestre, ano_curso))
+                conn.commit()
+                conn.close()
 
             if st.button("✅ Cadastrar Aula"):
                 if not cursos_semestres_ano:
                     st.warning("⚠️ Informe pelo menos um semestre para os cursos selecionados.")
                 else:
-                    inserir_aula(prof[0], disc[0], tipo, horas, sala, horario_inicio.strftime("%H:%M"), cursos_semestres_ano)
+                    inserir_aula(prof[0], disc[0], tipo, horas, sala, horario_inicio.strftime("%H:%M"), dia_semana, cursos_semestres_ano)
                     st.success("✅ Aula cadastrada com sucesso!")
         else:
             st.subheader("📚 Aulas Atribuídas ao Professor")
 
             professores = listar_professores()
             selecionado = st.selectbox("👨‍🏫 Selecione o professor", professores, format_func=lambda x: f"{x[1]} ({x[0]})")
-
+            prof_sel = selecionado[1]
             if selecionado:
                 aulas = buscar_aulas_por_professor(selecionado[0])
                 if not aulas:
@@ -69,13 +74,13 @@ def aulas_page():
                         hora_fim = hora_inicio + timedelta(hours=aula["horas"])
                         cursos_formatados = ", ".join([f"{c[0]} ({c[1]})" for c in aula["cursos"]])
 
-                        col1, col2 = st.columns([0.85, 0.15])
+                        col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
                         with col1:
                             expanded = st.expander(f"📘 {aula['disciplina']} - {aula['tipo'].capitalize()}", expanded=False)
                             with expanded:             
                                 st.markdown(f"""
                                 <div style='background-color:#f1f1f1;padding:15px;border-left:5px solid #2e7d32;'>
-                                    <b>🧑‍🏫 Professor:</b> {selecionado[1]}<br>
+                                    <b>🧑‍🏫 Professor:</b> {prof_sel}<br>
                                     <b>🧭 Tipo:</b> {aula['tipo'].capitalize()}<br>
                                     <b>🏫 Sala:</b> {aula['sala']}<br>
                                     <b>⏰ Horário:</b> {hora_inicio.strftime('%H:%M')} - {hora_fim.strftime('%H:%M')}<br>
@@ -88,6 +93,7 @@ def aulas_page():
                         with col2:
                             if st.button(f"✏️ Editar", key=f"edit_{aula['id']}"):
                                 st.session_state[f"edit_mode_{aula['id']}"] = True
+                        with col3:
                             if st.button(f"🗑️ Remover", key=f"del_{aula['id']}"):
                                 remover_aula(aula["id"])
                                 st.rerun()      
