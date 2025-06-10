@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime, timedelta, time
 from DB_GDME import (
     listar_professores, listar_disciplinas, listar_cursos, inserir_aula, buscar_aulas_por_professor,
-    atualizar_cursos_aula, remover_aula,  atualizar_aula
+    atualizar_cursos_aula, remover_aula,  atualizar_aula, conectar_db
 )
 
 def aulas_page():

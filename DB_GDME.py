@@ -297,7 +297,7 @@ def buscar_aulas_por_professor(cod_prof):
             "sala": aula[4],
             "horario_inicio": aula[5],
             "disciplina_codigo": aula[6],
-            "dia_semana": aula[7],
+            "dia_semana": aula[8],
             "cursos": cursos
         })
     conn.close()
